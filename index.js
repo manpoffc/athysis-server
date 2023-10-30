@@ -20,9 +20,13 @@ main()
   });
 
 app.use(cors());
+
 app.get("/athletes", async (req, res) => {
-  const { minAge, maxAge, citizen, gender, limit, page } = req.query;
+  const { minAge, maxAge, citizen, gender, limit, page, sortBy, sortOrder } =
+    req.query;
   let queryParams = {};
+
+  let orderBy = [];
   if (minAge && maxAge) {
     queryParams.age = { gte: parseInt(minAge), lte: parseInt(maxAge) };
   }
@@ -33,6 +37,15 @@ app.get("/athletes", async (req, res) => {
     queryParams.gender = { equals: gender };
   }
 
+  if (sortBy) {
+    if (sortBy == "citizen") {
+      orderBy.push({ citizen: sortOrder });
+    } else if (sortBy == "gender") {
+      orderBy.push({ gender: sortOrder });
+    } else if (sortBy == "age") {
+      orderBy.push({ age: sortOrder });
+    }
+  }
   let data = {};
 
   try {
@@ -41,6 +54,7 @@ app.get("/athletes", async (req, res) => {
       skip: parseInt(page) ? parseInt(page) * (limit || 10) : 0,
       take: limit || 10,
       where: queryParams,
+      orderBy: orderBy,
     });
     res.json(data);
   } catch (error) {
